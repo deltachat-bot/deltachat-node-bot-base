@@ -1,0 +1,14 @@
+{
+  "name": "deltachat-node-bot-base",
+  "version": "0.0.1",
+  "description": "A simple library to build DeltaChat bots with.",
+  "main": "src/index.js",
+  "author": "deltachat developers",
+  "license": "GPLv3",
+  "dependencies": {
+    "@types/node": "^13.7.4",
+    "config": "^3.2.5",
+    "deltachat-node": "^1.0.0-beta.26"
+  },
+  "devDependencies": {}
+}
