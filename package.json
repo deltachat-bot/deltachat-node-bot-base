@@ -4,7 +4,8 @@
   "description": "A simple library to build DeltaChat bots with.",
   "main": "src/index.js",
   "author": "deltachat developers",
-  "license": "GPLv3",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/deltachat-bot/deltachat-node-bot-base",
   "dependencies": {
     "@types/node": "^13.7.4",
     "config": "^3.2.5",
