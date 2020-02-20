@@ -5,7 +5,6 @@
 const config = require('config')
 const DeltaChat = require('deltachat-node').default
 const { C } = require('deltachat-node')
-const path = require('path')
 const log = require('./log')
 
 // Initialize the DC core engine.
@@ -46,7 +45,7 @@ deltachat.start = (handleNewMessageCallback) => {
   /**
    * Initialize the app, open the database, start looking for messages, etc.
    */
-  deltachat.open(path.join(__dirname, '../data'), () => {
+  deltachat.open(process.cwd(), () => {
     if (!deltachat.isConfigured()) {
       log("First time run: Configuring deltachat.")
       deltachat.configure({
