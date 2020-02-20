@@ -44,17 +44,39 @@ deltachat.start = (handleNewMessageCallback) => {
 
   /**
    * Initialize the app, open the database, start looking for messages, etc.
+   * We return a promise because DeltaChat.open() returns early itself, but we
+   * want to enable waiting until all is done.
    */
-  deltachat.open(process.cwd(), () => {
-    if (!deltachat.isConfigured()) {
-      log("First time run: Configuring deltachat.")
-      deltachat.configure({
-        addr: config.get('email_address'),
-        mail_pw: config.get('email_password')
-      })
-    }
-    log('Initialization done')
+  const dc_init_promise = new Promise((resolve, reject) => {
+    log('Initializing deltachat')
+    deltachat.open(process.cwd(), (err) => {
+      if (err) {
+        reject(err)
+      }
+      if (deltachat.isConfigured()) {
+        // As soon as it is connect, DC is ready for action.
+        deltachat.on("DC_EVENT_IMAP_CONNECTED", () => {
+          // Beware: this event gets fired on re-connections, too. Better not log anything, it might be confusing.
+          resolve()
+        })
+      } else {
+        // DeltaChat is only ready when the configuration is finished. This is later than DC_EVENT_IMAP_CONNECTED, thus we don't rely on it here.
+        log('Configuring deltachat...')
+        deltachat.on("DC_EVENT_CONFIGURE_PROGRESS", (progress, _) => {
+          if (progress === 1000) {
+            log("Configuration finished, deltachat is ready")
+            resolve()
+          }
+        })
+        deltachat.configure({
+          addr: config.get('email_address'),
+          mail_pw: config.get('email_password')
+        })
+      }
+    })
   })
+
+  return dc_init_promise
 }
 
 module.exports = deltachat
