@@ -46,11 +46,11 @@ deltachat.start((chat, message) => {
     // This is a 1-on-1 (aka "single") chat.
     // Reply by quoting the same text.
     deltachat.sendMessage(chat.getId(), `You said: ${messageText}`)
-  } else if (messageText.match(/bot[:, ]+/)) {
-    // Reply to a group chat only if the message started with "Bot".
+  } else if (messageText.match(/^bot[:, ]+/i)) {
+    // Reply to a group chat only if the message starts with "Bot".
     const contact = deltachat.getContact(message.getFromId())
     const displayName = contact.getDisplayName()
     deltachat.sendMessage(chat.getId(), `${displayName} said: ${messageText}`)
   }
-}
+})
 ```
