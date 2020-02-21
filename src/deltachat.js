@@ -1,7 +1,5 @@
-/**
- * This is a thin layer that uses the deltachat-node bindings, and sets up
- * listeners to react on events we need to handle in our application.
- */
+// This is a thin layer that uses the deltachat-node bindings, and sets up
+// listeners to react on events we need to handle in our application.
 const config = require('config')
 const DeltaChat = require('deltachat-node').default
 const { C } = require('deltachat-node')
@@ -10,31 +8,25 @@ const log = require('./log')
 // Initialize the DC core engine.
 const deltachat = new DeltaChat()
 
-/**
- * Close the connections and the database when the app exits.
- */
+// Close the connections and the database when the app exits.
 process.on('exit', () => deltachat.close() )
 
 
 deltachat.start = (handleNewMessageCallback) => {
-  /**
-   * Listen to event about incoming messages, and hand the payload over to the
-   * handling function.
-   */
+  // Listen to event about incoming messages for existing chats, and hand the
+  // payload over to the handling function.
   deltachat.on('DC_EVENT_INCOMING_MSG', (chatId, messageId) => {
-    //log(`Received DC_EVENT_INCOMING_MSG with args: ${chatId}, ${messageId}`)
     handleNewMessageCallback(deltachat.getChat(chatId), deltachat.getMessage(messageId))
   })
 
-  /**
-   * Listen to this event, too, in order to not miss messages from a completely
-   * unknown sender.
-   * This works around the behaviour of deltachat-core-rust that doesn't fire the
-   * event DC_EVENT_INCOMING_MSG if the sender is unknown to the client (the core
-   * considers this message to be part of the "deaddrop").
-   */
+  // Listen to event to get hands on messages that are not considered part of a
+  // chat yet.
+  // Background: the core engine puts all messages that don't belong to an
+  // existing chat (e.g. an initial message from someone you haven't chatted
+  // with yet) into a bucket called "deaddrop". We're checking for that
+  // association to filter the wanted messages from others (e.g. Message
+  // Delivery Notification, etc.).
   deltachat.on('DC_EVENT_MSGS_CHANGED', (chatId, messageId) => {
-    //log(`Received DC_EVENT_MSGS_CHANGED with args: ${chatId}, ${messageId}`)
     const message = deltachat.getMessage(messageId)
     if (message && message.isDeadDrop()) {
       const realChatId = deltachat.createChatByMessageId(messageId)
@@ -42,25 +34,33 @@ deltachat.start = (handleNewMessageCallback) => {
     }
   })
 
-  /**
-   * Initialize the app, open the database, start looking for messages, etc.
-   * We return a promise because DeltaChat.open() returns early itself, but we
-   * want to enable waiting until all is done.
-   */
+  // Initialize the app, open the database, start looking for messages, etc.
+  // We return a promise because DeltaChat.open() returns early itself, but we
+  // want to enable waiting until all is done.
   const dc_init_promise = new Promise((resolve, reject) => {
     log('Initializing deltachat')
     deltachat.open(process.cwd(), (err) => {
       if (err) {
         reject(err)
       }
+      // Configure deltachat if required.
+      // This happens on first runs (when no database was present before), or
+      // when first runs where cancelled before the configuration process was
+      // finished.
       if (deltachat.isConfigured()) {
-        // As soon as it is connect, DC is ready for action.
+        // This event serves well as indicator that deltachat is probably ready
+        // for action.
         deltachat.on("DC_EVENT_IMAP_CONNECTED", () => {
-          // Beware: this event gets fired on re-connections, too. Better not log anything, it might be confusing.
+          // Beware: this event gets fired on re-connections, too. Take care to
+          // not log messages (like "deltachat is ready") that might cause
+          // confusion later on.
           resolve()
         })
       } else {
-        // DeltaChat is only ready when the configuration is finished. This is later than DC_EVENT_IMAP_CONNECTED, thus we don't rely on it here.
+        // DeltaChat is only ready for action when the configuration is
+        // finished. This might happen later than DC_EVENT_IMAP_CONNECTED, thus
+        // we listen for this different event here. Before deltachat is ready,
+        // e.g. creating QR-codes might fail.
         log('Configuring deltachat...')
         deltachat.on("DC_EVENT_CONFIGURE_PROGRESS", (progress, _) => {
           if (progress === 1000) {
