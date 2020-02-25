@@ -2,6 +2,8 @@
 
 A simple library for building Delta Chat bots.
 
+Technicaly its a small abstraction layer over [`deltachat-node`](https://github.com/deltachat/deltachat-node) that does the setup/boilerplate for you.
+
 For further information on DeltaChat bots see <https://bots.delta.chat/>.
 
 ### Prerequisites
