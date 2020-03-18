@@ -44,7 +44,7 @@ deltachat.start((chat, message) => {
   const messageText = message.getText()
   log(`Received a message for chat ${chat.getName()}: ${messageText}`)
 
-  if (deltachat.getChatContacts(chat.getid()).size === 1) {
+  if (chat.isSingle()) {
     // This is a 1-on-1 (aka "single") chat.
     // Reply by quoting the same text.
     deltachat.sendMessage(chat.getId(), `You said: ${messageText}`)
