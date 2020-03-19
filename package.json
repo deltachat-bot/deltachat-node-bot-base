@@ -7,9 +7,9 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/deltachat-bot/deltachat-node-bot-base",
   "dependencies": {
-    "@types/node": "^13.7.4",
-    "config": "^3.2.5",
-    "deltachat-node": "^1.0.0-beta.26"
+    "@types/node": "^13.9.1",
+    "config": "^3.3.0",
+    "deltachat-node": "^1.27.0"
   },
   "devDependencies": {}
 }
